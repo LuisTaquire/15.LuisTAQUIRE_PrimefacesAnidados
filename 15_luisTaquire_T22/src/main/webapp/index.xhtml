@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>DEMO CRUD ANIDADOS</title>
+    </h:head>
+    <h:body>
+
+        <p:growl id="mensajeGeneral"  sticky="false" showDetail="true" life="3000">
+            <p:autoUpdate/>
+        </p:growl>
+
+        <h:form>
+            <p:commandButton value="Nueva Persona" actionListener="#{personaC.preparNuevaPersona(actionEvent)}" oncomplete="PF('dlgNuevo').show();" update=":formInsertar"
+                             style="font-size: 14px;"/>
+        </h:form>
+
+        <p:dialog id="dlgN" header="Nuevo Registro" widgetVar="dlgNuevo" showEffect="explode" hideEffect="explode"
+                  modal="true">  
+            <h:form id="formInsertar" style="margin: 0 auto; font-size: 10px;">            
+                <p:panelGrid id="gridInsertar" columns="4" style="margin: 0 auto; font-size: 10px;">
+                    <p:outputLabel value="DNI:"/>
+                    <p:inputText value="#{personasC.persona.DNIPER}"/>
+
+                    <p:outputLabel value="Nombres:"/>
+                    <p:inputText value="#{personasC.persona.NOMPER}"
+                                 required="true" requiredMessage="Nombres es oblligatorio"/>                
+
+                    <p:outputLabel value="Apellidos" />
+                    <p:inputText value="#{personasC.persona.APEPER}"
+                                 required="true" requiredMessage="Apellidos es oblligatorio"/>                    
+
+                    <p:outputLabel value="Direccion:" />
+                    <p:inputText value="#{personasC.persona.DIRPER}"
+                                 required="true" requiredMessage="Direccion es oblligatorio"/>  
+
+                    <p:outputLabel value="Celular:"/>
+                    <p:inputText value="#{personasC.persona.CELPER}"/>
+
+                    <p:outputLabel value="Pais" />
+                    <p:selectOneMenu id="pais" value="#{personasC.persona.pais.IDPAI}"
+                                     required="true" requiredMessage="Seleccione un pais">
+                        <f:selectItem itemLabel=" Seleccione " itemValue=""/>
+                        <f:selectItems value="#{personasC.listPaises}"/> 
+                        <f:ajax execute="pais" render="departamento , municipio, distrito"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Departamento:" />
+                    <p:selectOneMenu id="departamento" value="#{personasC.persona.departamento.IDDEP}"
+                                     required="true" requiredMessage="Seleccione un departamento">
+                        <f:selectItem itemLabel=" Seleccione "/>
+                        <f:selectItems value="#{personasC.listDeptos}"/> 
+                        <f:ajax execute="departamento" render="municipio"/>
+                    </p:selectOneMenu>   
+
+                    <p:outputLabel value="Provincia:"/>
+                    <p:selectOneMenu id="municipio" value="#{personasC.persona.provincia.IDPRO}"
+                                     required="true" requiredMessage="Seleccione un municipio">
+                        <f:selectItem itemLabel=" Seleccione "/>
+                        <f:selectItems value="#{personasC.listProvincias}"/> 
+                        <f:ajax execute="municipio" render="distrito"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Distrito:"/>
+                    <p:selectOneMenu id="distrito" value="#{personasC.persona.distrito.IDDIS}"
+                                     required="true" requiredMessage="Seleccione un municipio">
+                        <f:selectItem itemLabel=" Seleccione "/>
+                        <f:selectItems value="#{personasC.listDistritos}"/>                     
+                    </p:selectOneMenu>
+
+
+                    <p:commandButton value="Guardar" actionListener="#{personasC.nuevaPersona()}"
+                                     oncomplete="PF('dlgNuevo').hide();" update=":formMostrarEmpleado:tablaMostrarEmpleados"/>
+
+                    <p:commandButton value="Cancelar" actionListener="#{personasC.cancelar()}"
+                                     update=":formInsertar" immediate="true"
+                                     onclick="PF('dlgNuevo').hide();"/>
+
+                </p:panelGrid>
+            </h:form>
+        </p:dialog>
+
+        <h:form id="formMostrarEmpleado">
+            <p:dataTable id="tablaMostrarEmpleados" var="emp" value="#{personasC.listar}"
+                         emptyMessage="No hay datos de empleados" style="font-size: 12px;">
+
+                <p:column headerText="DNI Empleado">
+                    <h:outputText value="#{emp.DNIPER}"/>
+                </p:column>
+
+                <p:column headerText="Nombre del empleado">
+                    <h:outputText value="#{emp.NOMPER} #{emp.APEPER}"/>
+                </p:column>
+                
+                <p:column headerText="Dirección">
+                    <h:outputText value="#{emp.DIRPER} "/>
+                </p:column>
+
+                <p:column headerText="Pais - Departamento - Provincia - Distrito">
+                    <h:outputText value="#{emp.PNOMPAI} - #{emp.PNOMDEP} - #{emp.PNOMPRO} - #{emp.PNOMDIS} "/>
+                </p:column>
+
+                <p:column headerText="">
+                    <p:commandButton value="Eliminar" oncomplete="PF('dlgEliminar').show();"
+                                     update=":formEliminar">
+                        <f:setPropertyActionListener target="#{personasC.persona}" value="#{emp}"/>                     
+                    </p:commandButton>
+                </p:column>
+
+            </p:dataTable>
+
+        </h:form>           
+
+        <p:dialog id="dlg2" header="Eliminar Datos" widgetVar="dlgEliminar" showEffect="explode"
+                  hideEffect="explode" modal="true">
+
+            <h:form id="formEliminar" style="font-size: 12px;">            
+                <h:outputText value="Desea eliminar este registro?"/>
+                <p:commandButton value="Si" actionListener="#{personasC.eliminarPersona()}"
+                                 update=":formMostrarEmpleado" oncomplete="PF('dlgEliminar').hide();"/>
+                <p:commandButton value="No" onclick="PF('dlgEliminar').hide();"/>
+            </h:form>
+        </p:dialog>
+
+
+    </h:body>
+</html>
+
